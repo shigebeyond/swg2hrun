@@ -115,7 +115,7 @@ class Swagger2hrun:
         # content-type类型: application/json, application/x-www-form-urlencoded, multipart/form-data
         # https://blog.csdn.net/JackieDYH/article/details/108153797
         is_json = content_type.lower() == "application/json"
-        self.parse_schema(content[content_type], request, is_json)
+        self.parse_schema_params(content[content_type], request, is_json)
 
     # 解析参数
     def parse_parameters(self, api, request):
@@ -133,7 +133,7 @@ class Swagger2hrun:
             # body 和 query 不会同时出现
             # 1 body
             if param['in'] == 'body':
-                self.parse_schema(param, request, True)
+                self.parse_schema_params(param, request, True)
                 continue
 
             # 2 query
@@ -174,8 +174,8 @@ class Swagger2hrun:
                 }
                 validates.append(validate)
 
-    # 解析实体结构
-    def parse_schema(self, param, request, is_json):
+    # 解析实体结构中的参数
+    def parse_schema_params(self, param, request, is_json):
         # 获得实体类结构中的属性
         props = self.get_schema_props(param)
         if props == None:
