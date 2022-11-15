@@ -1,0 +1,4 @@
+PyYAML == 6.0
+jsonpath == 0.82
+mysql-connector == 2.2.9
+SQLAlchemy == 1.4.23
