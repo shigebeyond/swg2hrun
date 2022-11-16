@@ -2,8 +2,8 @@ import Swagger2hrun
 import HrunDao
 
 if __name__ == '__main__':
-    # swagger3文档的根url, 具体文档为 http://localhost:9000/v3/api-docs
-    swagger_url = 'http://localhost:9000'
+    # swagger3文档的url
+    swagger_url = 'http://localhost:9000/v3/api-docs'
     # 项目名
     project_name = 'demo项目'
 

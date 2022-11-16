@@ -10,8 +10,8 @@
 ## swg2hrun使用
 1. [main.py](main.py) 修改 swagger3 url 等配置
 ```python
-# swagger3文档的根url, 具体文档为 http://localhost:9000/v3/api-docs
-swagger_url = 'http://localhost:9000'
+# swagger3文档的url
+swagger_url = 'http://localhost:9000/v3/api-docs'
 # 项目名
 project_name = 'demo项目'
 ```

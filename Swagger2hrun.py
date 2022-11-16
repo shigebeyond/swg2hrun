@@ -16,13 +16,19 @@ class Swagger2hrun:
     # 如果url为本地文件，则为测试用
     def __init__(self, url):
         self.url = url
+        if 'v2' in url:
+            self.version = 2
+        elif 'v3' in url:
+            self.version = 3
+        else:
+            raise Exception("无法识别swagger版本: " + url)
 
     # 生成用例
     # 返回的是 { tag名: 用例列表 }, 方便hrun manager创建对应模块与用例
     def transform_testcases(self):
         # 请求swagger3 api
         if self.url.startswith('http'):
-            swg = requests.get(self.url + '/v3/api-docs').json()
+            swg = requests.get(self.url).json()
         else: # 测试
             swg = json.loads(read_file(self.url))
             self.url = 'http://localhost'
@@ -245,7 +251,7 @@ class Swagger2hrun:
             print(f"\t{url} : {var}")
 
 if __name__ == '__main__':
-    # hrun = Swagger2hrun('http://localhost:9000')
+    # hrun = Swagger2hrun('http://localhost:9000/v3/api-docs')
     hrun = Swagger2hrun('data/swagger-demo.json')
     tag2cases = hrun.transform_testcases()
     hrun.print_testcases(tag2cases)
