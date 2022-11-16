@@ -1,27 +1,22 @@
 from sqlalchemy import Column, ForeignKey, String, Integer, FLOAT, DATE, create_engine, desc, MetaData, Table
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-import sys
 import datetime
 
 # 引擎
-# echo_sql = True
 echo_sql = False
-# engine = create_engine('mysql+mysqlconnector://root:root@localhost:3306/stock?charset=utf8', echo=echo_sql)
-engine = create_engine('mysql+mysqlconnector://root:test_server_db!@192.168.0.182:3306/hrun?charset=utf8', echo=echo_sql)
+user = 'root'
+password = 'test_server_db!'
+ip = '192.168.0.182'
+port = '3306'
+dbname = 'hrun'
+engine = create_engine(f'mysql+mysqlconnector://{user}:{password}@{ip}:{port}/{dbname}?charset=utf8', echo=echo_sql)
 
 # 元数据
 metadata = MetaData(engine)
 
-# 启动脚本文件
-start_file = sys.argv[0]
-# 是否web环境
-is_web = 'web' in start_file
-# web环境要自动提交
-autocommit = is_web
-
 # 创建DBSession类型:
-DBSession = sessionmaker(bind=engine, autocommit=autocommit)
+DBSession = sessionmaker(bind=engine, autocommit=True)
 session = DBSession()
 session.expire_on_commit = False # commit时不过期旧对象, 不然每次commit都会导致大量旧对象重新加载, 反正一个业务方法commit后, 另一个业务方法会重新查询对象, 以便实现方法之间解耦
 

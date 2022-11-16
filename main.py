@@ -2,12 +2,12 @@ import Swagger2hrun
 import HrunDao
 
 if __name__ == '__main__':
-    # swagger文档的根url, 具体文档为 http://localhost:9000/v3/api-docs
+    # swagger3文档的根url, 具体文档为 http://localhost:9000/v3/api-docs
     swagger_url = 'http://localhost:9000'
     # 项目名
     project_name = 'demo项目'
 
-    # 1 swagger转hrun配置
+    # 1 swagger3转hrun配置
     hrun = Swagger2hrun.Swagger2hrun(swagger_url)
     tag2cases = hrun.transform_testcases()
     hrun.print_testcases(tag2cases)

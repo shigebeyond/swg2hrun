@@ -8,7 +8,7 @@ def read_file(path):
     with open(path, 'r', encoding="utf-8") as file:
         return file.read()
 
-# swagger自动生成测试用例
+# swagger3自动生成测试用例
 class Swagger2hrun:
     # token参数名，也是变量名
     TOKEN_NAME = 'token'
@@ -19,7 +19,7 @@ class Swagger2hrun:
 
     # 生成用例
     def transform_testcases(self):
-        # 请求swagger api
+        # 请求swagger3 api
         if self.url.startswith('http'):
             swg = requests.get(self.url + '/v3/api-docs').json()
         else: # 测试
@@ -220,7 +220,7 @@ class Swagger2hrun:
         return ''
 
     def print_testcases(self, tag2cases):
-        print("Swagger Api转为 HttpRunner 用例json: ")
+        print("Swagger3 Api转为 HttpRunner 用例json: ")
         for tag, cases in tag2cases.items():
             for case in cases:
                 print("\t" + str(case))
