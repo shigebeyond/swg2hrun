@@ -10,7 +10,7 @@ if __name__ == '__main__':
 
     # 1 swagger转hrun配置
     hrun = Swagger2hrun.Swagger2hrun(swagger_url)
-    hrun.add_common_validate('status', 200)  # 添加通用校验器，一般用于所有接口都有统一的响应数据结构，如响应码、错误码等
+    # hrun.add_common_validate('status', 200)  # 添加通用校验器, 一般用于所有接口都有统一的响应数据结构, 如响应码/错误码等
     tag2cases = hrun.transform_testcases()
     hrun.print_testcases(tag2cases)
     # 2 存到hrun manager db中

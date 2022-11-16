@@ -30,7 +30,13 @@ dbname = 'hrun'
 3.  直接运行[main.py](src/main.py)
 
 4. 注意:
-如果接口有统一的token参数来校验身份或会话, 可以通过修改 `Swagger2hrun.TOKEN_NAME` 来指定这个token参数名, 本库会自动将参数值变为httprunner的变量
+
+4.1 如果接口有统一的token参数来校验身份或会话, 可以通过修改 `Swagger2hrun.TOKEN_NAME` 来指定这个token参数名, 本库会自动将参数值变为httprunner的变量
+
+4.2 如果接口都有统一的响应数据结构, 如响应码/错误码等, 则可添加通用的校验器, 参考[main.py](src/main.py)
+```
+hrun.add_common_validate('status', 200) 
+```
 
 ## HttpRunnerManager使用
 1. HttpRunnerManager db库的新数据:
