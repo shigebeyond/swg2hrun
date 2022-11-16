@@ -89,7 +89,7 @@ class HrunDao:
 
 
 if __name__ == '__main__':
-    # 1 swagger3转hrun配置
+    # 1 swagger转hrun配置
     tag2cases = json.loads(Swagger2hrun.read_file('data/hrun-demo.json'))
     # 2 存到hrun manager db中
     dao = HrunDao('demo项目')

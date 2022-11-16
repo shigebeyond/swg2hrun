@@ -1,16 +1,17 @@
 [GitHub](https://github.com/shigebeyond/swg2hrun) | [Gitee](https://gitee.com/shigebeyond/swg2hrun)
 
-# swg2hrun - Swagger3转HttpRunnerManager
+# swg2hrun - Swagger转HttpRunnerManager
 
 ## 概述
 该库主要用于：
-1. Swagger3 Api转为 HttpRunner 用例配置
+1. Swagger Api转为 HttpRunner 用例配置，兼容 Swagger v2 与 v3 版本 
 2. 用例配置存到 HttpRunnerManager 库中
 
 ## swg2hrun使用
-1. [main.py](main.py) 修改 swagger3 url 等配置
+1. [main.py](main.py) 修改 swagger url 等配置
 ```python
-# swagger3文档的url
+# swagger文档的url, 必须带v2或v3的字样, 来识别swagger版本
+# swagger_url = 'http://localhost:9000/v2/api-docs?group=default'
 swagger_url = 'http://localhost:9000/v3/api-docs'
 # 项目名
 project_name = 'demo项目'
@@ -32,11 +33,11 @@ dbname = 'hrun'
 
 ## HttpRunnerManager使用
 1. HttpRunnerManager db库的新数据:
-swg2hrun库将 Swagger3 Api 转换为 HttpRunnerManager 中的db对象
+swg2hrun库将 Swagger Api 转换为 HttpRunnerManager 中的db对象
 ```
 项目名(如"demo项目") => HttpRunnerManager 中的项目
-Swagger3中的tag => HttpRunnerManager 中的模块
-Swagger3中的单个接口 => HttpRunnerManager 中的用例
+Swagger中的tag => HttpRunnerManager 中的模块
+Swagger中的单个接口 => HttpRunnerManager 中的用例
 ```
 
 2. 添加环境(真实的请求根地址)

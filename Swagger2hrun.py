@@ -8,7 +8,7 @@ def read_file(path):
     with open(path, 'r', encoding="utf-8") as file:
         return file.read()
 
-# swagger3自动生成测试用例
+# swagger自动生成测试用例
 class Swagger2hrun:
     # token参数名，也是变量名
     TOKEN_NAME = 'token'
@@ -21,18 +21,23 @@ class Swagger2hrun:
         elif 'v3' in url:
             self.version = 3
         else:
-            raise Exception("无法识别swagger版本: " + url)
+            raise Exception("无法识别swagger版本, url要带上v2或v3字样: " + url)
+
+        self.common_validates = [] # 通用校验，每个接口都加上
 
     # 生成用例
     # 返回的是 { tag名: 用例列表 }, 方便hrun manager创建对应模块与用例
     def transform_testcases(self):
-        # 请求swagger3 api
+        # 请求swagger api
         if self.url.startswith('http'):
             swg = requests.get(self.url).json()
         else: # 测试
             swg = json.loads(read_file(self.url))
-            self.url = 'http://localhost'
-        self.schemas = swg['components']['schemas']  # 实体类结构描述
+        # 实体类结构描述
+        if self.version == 3:
+            self.schemas = swg['components']['schemas']
+        else:
+            self.schemas = swg['definitions']
         self.tags = list(map(lambda it: it['name'], swg['tags']))  # tag, 对应模块
         self.variables = {} # 记录url对应的变量
 
@@ -86,6 +91,7 @@ class Swagger2hrun:
         :param method:
         :return:
         '''
+        # 请求
         request = {
             "url": uri,
             "method": method.upper(),
@@ -93,12 +99,14 @@ class Swagger2hrun:
             "json": {},
             "params": {}
         }
+        # 校验器：复制通用校验器
+        validates = self.common_validates.copy()
         testcase = {
             "test": {
                 "name": api['summary'].replace('/', '_'),
                 "variables": {},
                 "request": request,
-                "validate": [],
+                "validate": validates,
                 "extract": [],
                 "output": []
             }
@@ -109,7 +117,7 @@ class Swagger2hrun:
         self.parse_body(api, request)
 
         # 解析响应
-        self.parse_response(api, testcase['test']['validate'])
+        self.parse_response(api, validates)
 
         # 清理空属性
         for key in ['headers', 'json', 'params']:
@@ -174,27 +182,54 @@ class Swagger2hrun:
             return
 
         # 获得响应描述
-        content = responses['200']['content']['*/*']
+        if self.version == 3:
+            content = responses['200']['content']['*/*']
+        else:
+            content = responses['200']
         # 添加响应实体结构属性对应的校验器
         self.add_schema_prop_validates(content, validates)
 
     # 添加响应实体结构属性对应的校验器
-    def add_schema_prop_validates(self, content, validates):
+    # 注意：响应的实体，可能会引用下一层其他实体，如ApiResult«Token» 引用下一层的 Token, path参数是记录上一层的路径
+    def add_schema_prop_validates(self, content, validates, path = ''):
         # 获得响应的实体类结构中的属性
-        props = self.get_schema_props(content)
+        if path == '': # 第一层实体： schema.$ref
+            props = self.get_schema_props(content)
+        else: # 下一层实体(属性也引用实体)： $ref
+            props = self.get_next_schema_props(content)
         if props == None:
             return
 
         # 遍历属性来填充校验器
         for name, opt in props.items():
+            # 添加校验器
             value = self.get_param_example_value(opt)
             if value != '':
                 validate = {
                     'comparator': 'contains',
-                    'check': 'content.' + name,
+                    'check': f'content.{path}{name}',
                     'expected': value
                 }
                 validates.append(validate)
+
+            # 如果引用下一层实体(属性也引用实体), 则递归调用
+            if '$ref' in opt:
+                self.add_schema_prop_validates(opt, validates, f"{path}{name}.")
+
+    def add_common_validate(self, field, value, comparator ='equals'):
+        '''
+        添加通用的校验器
+        :param field: 要检验的响应字段名， 支持多级
+        :param value: 期望的值
+        :param comparator: 校验方式
+        :return:
+        '''
+        validate = {
+            'comparator': comparator,
+            'check': f'content.{field}',
+            'expected': value
+        }
+        self.common_validates.append(validate)
 
     # 解析实体结构中的参数
     def parse_schema_params(self, param, request, is_json):
@@ -214,13 +249,28 @@ class Swagger2hrun:
             value = self.get_param_example_value(opt, name)
             request[req_field].update({name: value})
 
-    # 获得实体类结构中的属性
+    # 获得实体类结构中的属性, 即 schema.$ref 路径下引用的实体属性
     def get_schema_props(self, param):
         if 'schema' not in param or '$ref' not in param['schema']:
             return None
 
         # 获得实体结构引用的路径，如 #/components/schemas/用户实体
         ref = param['schema']['$ref']
+        if not ref:
+            return None
+
+        # 实体名，如 用户实体
+        name = ref.split('/')[-1]
+        # 实体类结构中的属性
+        return self.schemas[name]['properties']
+
+    # 获得下一层的实体类结构中的属性, 即 $ref 路径下引用的实体属性
+    def get_next_schema_props(self, param):
+        if '$ref' not in param:
+            return None
+
+        # 获得实体结构引用的路径，如 #/components/schemas/用户实体
+        ref = param['$ref']
         if not ref:
             return None
 
@@ -242,7 +292,7 @@ class Swagger2hrun:
         return ''
 
     def print_testcases(self, tag2cases):
-        print("Swagger3 Api转为 HttpRunner 用例json: ")
+        print("Swagger Api转为 HttpRunner 用例json: ")
         for tag, cases in tag2cases.items():
             for case in cases:
                 print("\t" + str(case))
@@ -252,6 +302,8 @@ class Swagger2hrun:
 
 if __name__ == '__main__':
     # hrun = Swagger2hrun('http://localhost:9000/v3/api-docs')
-    hrun = Swagger2hrun('data/swagger-demo.json')
+    # hrun = Swagger2hrun('data/swagger-v3-demo.json')
+    hrun = Swagger2hrun('data/swagger-v2-demo.json')
+    hrun.add_common_validate('status', 200) # 添加通用校验器，一般用于所有接口都有统一的响应数据结构，如响应码、错误码等
     tag2cases = hrun.transform_testcases()
     hrun.print_testcases(tag2cases)
