@@ -8,16 +8,17 @@
 2. 用例配置存到 HttpRunnerManager 库中
 
 ## swg2hrun使用
-1. [main.py](main.py) 修改 swagger url 等配置
+1. [main.py](src/main.py) 修改 swagger url 等配置
 ```python
 # swagger文档的url, 必须带v2或v3的字样, 来识别swagger版本
-# swagger_url = 'http://localhost:9000/v2/api-docs?group=default'
-swagger_url = 'http://localhost:9000/v3/api-docs'
+# swagger_url = 'data/swagger-v3-demo.json' # 本地文件
+# swagger_url = 'http://localhost:9000/v2/api-docs?group=default' # swagger2
+swagger_url = 'http://localhost:9000/v3/api-docs' # swagger3
 # 项目名
 project_name = 'demo项目'
 ```
 
-2. [Db.py](Db.py) 修改 HttpRunnerManager 的数据库连接配置
+2. [Db.py](src/Db.py) 修改 HttpRunnerManager 的数据库连接配置
 ```
 user = 'root'
 password = 'test_server_db!'
@@ -26,7 +27,7 @@ port = '3306'
 dbname = 'hrun'
 ```
 
-3.  直接运行[main.py](main.py)
+3.  直接运行[main.py](src/main.py)
 
 4. 注意:
 如果接口有统一的token参数来校验身份或会话, 可以通过修改 `Swagger2hrun.TOKEN_NAME` 来指定这个token参数名, 本库会自动将参数值变为httprunner的变量

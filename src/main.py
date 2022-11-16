@@ -1,9 +1,10 @@
-import Swagger2hrun
-import HrunDao
+from src import Swagger2hrun, HrunDao
 
 if __name__ == '__main__':
     # swagger文档的url, 必须带v2或v3的字样, 来识别swagger版本
-    swagger_url = 'http://localhost:9000/v3/api-docs'
+    swagger_url = 'data/swagger-v3-demo.json' # 本地文件
+    # swagger_url = 'http://localhost:9000/v2/api-docs?group=default' # swagger2
+    # swagger_url = 'http://localhost:9000/v3/api-docs'  # swagger3
     # 项目名
     project_name = 'demo项目'
 

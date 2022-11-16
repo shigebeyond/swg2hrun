@@ -1,7 +1,7 @@
 import time
 import json
-import Db
-import Swagger2hrun
+from src import Db, Swagger2hrun
+
 
 # 当前时间字符串
 def date():

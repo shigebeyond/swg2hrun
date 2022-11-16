@@ -16,7 +16,7 @@ engine = create_engine(f'mysql+mysqlconnector://{user}:{password}@{ip}:{port}/{d
 metadata = MetaData(engine)
 
 # 创建DBSession类型:
-DBSession = sessionmaker(bind=engine, autocommit=True)
+DBSession = sessionmaker(bind=engine, autocommit=False)
 session = DBSession()
 session.expire_on_commit = False # commit时不过期旧对象, 不然每次commit都会导致大量旧对象重新加载, 反正一个业务方法commit后, 另一个业务方法会重新查询对象, 以便实现方法之间解耦
 
