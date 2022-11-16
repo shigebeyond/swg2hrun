@@ -7,8 +7,8 @@
 1. Swagger3 Api转为 HttpRunner 用例配置
 2. 用例配置存到 HttpRunnerManager 库中
 
-##　使用
-1. [main.py](main.py) 修改配置
+##　swg2hrun使用
+1. [main.py](main.py) 修改 swagger3 url 等配置
 ```python
 # swagger3文档的根url, 具体文档为 http://localhost:9000/v3/api-docs
 swagger_url = 'http://localhost:9000'
@@ -16,7 +16,7 @@ swagger_url = 'http://localhost:9000'
 project_name = 'demo项目'
 ```
 
-2. [Db.py](Db.py) 修改数据库连接配置
+2. [Db.py](Db.py) 修改 HttpRunnerManager 的数据库连接配置
 ```
 user = 'root'
 password = 'test_server_db!'
@@ -26,3 +26,19 @@ dbname = 'hrun'
 ```
 
 3.  直接运行[main.py](main.py)
+
+4. 注意:
+如果接口有统一的token参数来校验身份或会话, 可以通过修改 `Swagger2hrun.TOKEN_NAME` 来指定这个token参数名, 本库会自动将参数值变为httprunner的变量
+
+## HttpRunnerManager使用
+1. swg2hrun库将 Swagger3 Api 转换为 HttpRunnerManager 中的对象
+```
+1 项目名(如"demo项目") => HttpRunnerManager 中的项目
+2 Swagger3中的tag => HttpRunnerManager 中的模块
+3 Swagger3中的单个接口 => HttpRunnerManager 中的用例
+```
+
+2. 注意
+运行用例时, 要先准备好：
+2.1 添加对应的环境(请求根地址)
+2.2 配置好变量

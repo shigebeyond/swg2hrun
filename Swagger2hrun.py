@@ -18,6 +18,7 @@ class Swagger2hrun:
         self.url = url
 
     # 生成用例
+    # 返回的是 { tag名: 用例列表 }, 方便hrun manager创建对应模块与用例
     def transform_testcases(self):
         # 请求swagger3 api
         if self.url.startswith('http'):
@@ -27,7 +28,7 @@ class Swagger2hrun:
             self.url = 'http://localhost'
         self.schemas = swg['components']['schemas']  # 实体类结构描述
         self.tags = list(map(lambda it: it['name'], swg['tags']))  # tag, 对应模块
-        self.variables = {} # 记录变量
+        self.variables = {} # 记录url对应的变量
 
         tag2cases = {}
         # 遍历paths
@@ -51,7 +52,7 @@ class Swagger2hrun:
                 # 处理单个接口(用例)
                 testcase = self.parse_api(api, uri, method)
 
-                # 记录
+                # 记录: 将用例挂到对应的tag下, 以便后续hrun manager创建对应模块与用例
                 if tag not in tag2cases:
                     tag2cases[tag] = []
                 tag2cases[tag].append(testcase)
@@ -59,11 +60,17 @@ class Swagger2hrun:
 
     # 替换为hrun的变量, 如 user/{userId} 要变为 user/${userId}
     def fix_uri(self, uri):
-        if '(' in uri:  # 表达式
-            uri = uri.replace('{', '${')
-        else:  # 纯变量
-            uri.replace('{', '$').replace('}', '')
-        return uri
+        # 1 无变量
+        if '{' not in uri:
+            return uri
+
+        # 2 有变量
+        # 2.1 表达式
+        if '(' in uri:
+            return uri.replace('{', '${')
+
+        # 2.2 纯变量
+        return uri.replace('{', '$').replace('}', '')
 
     def parse_api(self, api, uri, method):
         '''
@@ -148,6 +155,11 @@ class Swagger2hrun:
                 value = self.get_param_example_value(param, name)
                 request['headers'].update({name: value})
 
+            # 4 path: 不取参数, 只处理变量
+            if param['in'] == 'path':
+                key = request['method'] + ' ' + request['url']
+                self.variables[key] = param['name']
+
     # 解析响应
     def parse_response(self, api, validates):
         responses = api['responses']
@@ -157,7 +169,11 @@ class Swagger2hrun:
 
         # 获得响应描述
         content = responses['200']['content']['*/*']
+        # 添加响应实体结构属性对应的校验器
+        self.add_schema_prop_validates(content, validates)
 
+    # 添加响应实体结构属性对应的校验器
+    def add_schema_prop_validates(self, content, validates):
         # 获得响应的实体类结构中的属性
         props = self.get_schema_props(content)
         if props == None:
@@ -207,7 +223,7 @@ class Swagger2hrun:
         # 实体类结构中的属性
         return self.schemas[name]['properties']
 
-    # 获得参数的示例值
+    # 获得参数的示例值, 要处理token变量
     def get_param_example_value(self, value, name=None):
         # 属性值有示例值
         if 'example' in value:
@@ -224,6 +240,9 @@ class Swagger2hrun:
         for tag, cases in tag2cases.items():
             for case in cases:
                 print("\t" + str(case))
+        print("涉及变量")
+        for url, var in self.variables.items():
+            print(f"\t{url} : {var}")
 
 if __name__ == '__main__':
     # hrun = Swagger2hrun('http://localhost:9000')
